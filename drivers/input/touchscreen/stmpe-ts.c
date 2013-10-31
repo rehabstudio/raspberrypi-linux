@@ -150,11 +150,14 @@ static irqreturn_t stmpe_ts_handler(int irq, void *data)
 	y = ((data_set[1] & 0xf) << 8) | data_set[2];
 	z = data_set[3];
 
-	input_report_abs(ts->idev, ABS_X, x);
-	input_report_abs(ts->idev, ABS_Y, y);
-	input_report_abs(ts->idev, ABS_PRESSURE, z);
-	input_report_key(ts->idev, BTN_TOUCH, 1);
-	input_sync(ts->idev);
+	/* Sometimes, the chip reports values of all zeroes.  Ignore these. */
+	if (x && y && z) {
+		input_report_abs(ts->idev, ABS_X, x);
+		input_report_abs(ts->idev, ABS_Y, y);
+		input_report_abs(ts->idev, ABS_PRESSURE, z);
+		input_report_key(ts->idev, BTN_TOUCH, 1);
+		input_sync(ts->idev);
+	}
 
        /* flush the FIFO after we have read out our values. */
 	__stmpe_reset_fifo(ts->stmpe);
