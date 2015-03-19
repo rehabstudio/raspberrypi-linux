@@ -137,9 +137,14 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
 	int i;
 	int ret = 0;
 	size_t startbyte_size = 0;
+	size_t end_offset=0;
+	u16 *endMem16;
 
 	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
 		__func__, offset, len);
+
+	end_offset=(par->info->var.yres-1) * par->info->fix.line_length;
+	endMem16=(u16 *)(par->info->screen_base + end_offset);
 
 	remain = len / 2;
 	vmem16 = (u16 *)(par->info->screen_base + offset);
@@ -167,6 +172,27 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
 						to_copy, remain - to_copy);
 
 		for (i = 0; i < to_copy; i++)
+		{
+			txbuf16[i] = cpu_to_be16(*vmem16);
+			if(vmem16 == endMem16)
+				vmem16=(u16 *)(par->info->screen_base);
+			else
+				++vmem16;
+		}
+		//vmem16 = vmem16 + to_copy;
+		ret = par->fbtftops.write(par, par->txbuf.buf,
+						startbyte_size + to_copy * 2);
+		if (ret < 0)
+			return ret;
+		remain -= to_copy;
+	}
+
+/*	while (remain) {
+		to_copy = remain > tx_array_size ? tx_array_size : remain;
+		dev_dbg(par->info->device, "    to_copy=%zu, remain=%zu\n",
+						to_copy, remain - to_copy);
+
+		for (i = 0; i < to_copy; i++)
 			txbuf16[i] = cpu_to_be16(vmem16[i]);
 
 		vmem16 = vmem16 + to_copy;
@@ -176,7 +202,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
 			return ret;
 		remain -= to_copy;
 	}
-
+*/
 	return ret;
 }
 EXPORT_SYMBOL(fbtft_write_vmem16_bus8);

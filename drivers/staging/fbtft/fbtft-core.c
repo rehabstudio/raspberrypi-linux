@@ -377,6 +377,7 @@ static void fbtft_update_display(struct fbtft_par *par, unsigned start_line,
 	long fps, throughput;
 	bool timeit = false;
 	int ret = 0;
+	unsigned start_line_t;
 
 	if (unlikely(par->debug & (DEBUG_TIME_FIRST_UPDATE | DEBUG_TIME_EACH_UPDATE))) {
 		if ((par->debug & DEBUG_TIME_EACH_UPDATE) || \
@@ -409,7 +410,9 @@ static void fbtft_update_display(struct fbtft_par *par, unsigned start_line,
 		par->fbtftops.set_addr_win(par, 0, start_line,
 				par->info->var.xres-1, end_line);
 
-	offset = start_line * par->info->fix.line_length;
+	start_line_t= (start_line + 119) % 239;
+	offset= start_line_t * par->info->fix.line_length;
+	//offset = start_line * par->info->fix.line_length;
 	len = (end_line - start_line + 1) * par->info->fix.line_length;
 	ret = par->fbtftops.write_vmem(par, offset, len);
 	if (ret < 0)
