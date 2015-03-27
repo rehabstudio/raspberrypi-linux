@@ -1,5 +1,5 @@
 /*
- * Device Tree overlay for Adafruit PiTFT 2.8" resistive touch screen
+ * Device Tree overlay for pitft by Adafruit
  *
  */
 
@@ -43,7 +43,7 @@
 			#size-cells = <0>;
 
 			pitft: pitft@0{
-				compatible = "ilitek,ili9340";
+				compatible = "himax,hx8357d";
 				reg = <0>;
 				pinctrl-names = "default";
 				pinctrl-0 = <&pitft_pins>;
